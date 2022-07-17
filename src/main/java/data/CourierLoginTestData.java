@@ -1,8 +1,8 @@
-package ru.java.praktikum;
+package data;
 
 public class CourierLoginTestData {
-    public final String login;
-    public final String password;
+    public String login;
+    public String password;
 
 
     public CourierLoginTestData(String login, String password){

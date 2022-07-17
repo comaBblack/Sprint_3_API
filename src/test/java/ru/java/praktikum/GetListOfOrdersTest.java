@@ -1,22 +1,23 @@
 package ru.java.praktikum;
+import data.CourierCreateTestData;
+import data.CourierLoginTestData;
+import data.CreateOrderTestData;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Before;
 import org.junit.Test;
 import java.util.List;
-import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static ru.java.praktikum.CourierCreateTest.createCourier;
-import static ru.java.praktikum.CourierLoginTest.courierLogin;
-import static ru.java.praktikum.CreateOrderTest.orderCreate;
+import static steps.AcceptOrderStep.orderAccept;
+import static steps.CourierLoginStep.courierLogin;
+import static steps.CreateCourierStep.createCourier;
+import static steps.CreateOrderStep.orderCreate;
+import static steps.GetOrderListStep.getOrderList;
+
 
 public class GetListOfOrdersTest {
-    @Before
-    public void setUp() {
-        RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru/";
-    }
+
     @Test
     @DisplayName("Список заказов")
     public void getOrderListTest(){
@@ -32,21 +33,13 @@ public class GetListOfOrdersTest {
         int courierId = courierLogin(courierLog).then().extract().path("id");
 
         //создание заказа, получение id
-        ru.java.praktikum.CreateOrderTest order = new ru.java.praktikum.CreateOrderTest("Kakashi", "Hatake", "Konoha, 31 apt.", "Baumanskaya", "+8 880 555 35 35", 4, "2022-06-06", "Saske, come back to Konoha", List.of("BLACK", "GRAY"));
+        CreateOrderTestData order = new CreateOrderTestData("Kakashi", "Hatake", "Konoha, 31 apt.", "Baumanskaya", "+8 880 555 35 35", 4, "2022-06-06", "Saske, come back to Konoha", List.of("BLACK", "GRAY"));
         int orderId = orderCreate(order).then().extract().path("track");
 
         //принять заказ
-        given()
-                .header("Content-type", "application/json")
-                .when()
-                .with().params("id", orderId, "courierId",courierId)
-                .put("/api/v1/orders/accept/");
+        orderAccept(orderId, courierId);
 
         //проверить список заказов
-        Response orderList = given()
-                .header("Content-type", "application/json")
-                .when()
-                .get("/api/v1/orders");
-        orderList.then().assertThat().body("orders", notNullValue());
+        getOrderList().then().assertThat().body("orders", notNullValue()).and().body(not(equalTo("error")));
     }
 }

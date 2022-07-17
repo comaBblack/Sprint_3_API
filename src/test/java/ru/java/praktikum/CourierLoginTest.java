@@ -1,4 +1,6 @@
 package ru.java.praktikum;
+import data.CourierCreateTestData;
+import data.CourierLoginTestData;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -9,20 +11,13 @@ import org.junit.Test;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertNotNull;
-import static ru.java.praktikum.CourierCreateTest.createCourier;
+import static steps.CourierLoginStep.courierLogin;
+import static steps.CreateCourierStep.createCourier;
+import static steps.DeleteCourierStep.courierDelete;
 
 public class CourierLoginTest {
-
-    public static Response courierLogin(CourierLoginTestData courier){
-        return given()
-                .header("Content-type", "application/json")
-                .body(courier)
-                .when()
-                .post("/api/v1/courier/login");
-    }
     @Before
     public void setUp() {
-        RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru/";
         String login = RandomStringUtils.randomAlphabetic(6);
         String password = RandomStringUtils.randomAlphabetic(6);
         String firstName = RandomStringUtils.randomAlphabetic(10);
@@ -30,7 +25,7 @@ public class CourierLoginTest {
         createCourier(courier);
     }
 
-    @After
+
 
     //курьер может авторизоваться
     //для авторизации нужно передать все обязательные поля
@@ -51,8 +46,7 @@ public class CourierLoginTest {
         //проверка, что запрос возвращает id
         assertNotNull(responseId);
         //удаление данных о курьере
-        given()
-                .delete("/api/v1/courier/{id}", responseId);
+        courierDelete(responseId);
 
     }
     //если какого-то поля нет, запрос возвращает ошибку

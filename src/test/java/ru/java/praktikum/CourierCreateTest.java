@@ -1,4 +1,6 @@
 package ru.java.praktikum;
+import data.CourierCreateTestData;
+import data.CourierLoginTestData;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -8,21 +10,11 @@ import org.junit.Test;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
-import static ru.java.praktikum.CourierLoginTest.courierLogin;
+import static steps.CourierLoginStep.courierLogin;
+import static steps.CreateCourierStep.createCourier;
+import static steps.DeleteCourierStep.courierDelete;
 
 public class CourierCreateTest {
-    public static Response createCourier(CourierCreateTestData courier){
-        return given()
-                .header("Content-type", "application/json")
-                .body(courier)
-                .when()
-                .post("/api/v1/courier");
-    }
-
-    @Before
-    public void setUp() {
-        RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru/";
-    }
 
     //создание курьера
     //успешный запрос возвращает ok: true
@@ -42,8 +34,7 @@ public class CourierCreateTest {
         CourierLoginTestData courierLog = new CourierLoginTestData(login, password);
         int responseId = courierLogin(courierLog).then().extract().path("id");
 
-        given()
-                .delete("/api/v1/courier/{id}", responseId);
+        courierDelete(responseId);
     }
 
     //нельзя создать двух одинаковых курьеров
@@ -68,8 +59,7 @@ public class CourierCreateTest {
                 .statusCode(409);
 
         //удаление созданного курьера
-        given()
-                .delete("/api/v1/courier/{id}", responseId);
+        courierDelete(responseId);
     }
 
     //чтобы создать курьера, нужно передать в ручку все обязательные поля
